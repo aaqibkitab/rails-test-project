@@ -65,8 +65,12 @@ RUN bundle install
 
 COPY . /app/
 EXPOSE 8080
+RUN chown -R 1001:0 /app && chmod -R ug+rwx /app && \
+    rpm-file-permissions
+
 ADD entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
+USER 1001
 ENTRYPOINT ["entrypoint.sh"]
 
 
