@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/s2i-core:1-249
+FROM registry.access.redhat.com/ubi8/s2i-core:1-249 as base
 
 ENV NODEJS_VER=14
 RUN curl --silent --location https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo
@@ -16,15 +16,12 @@ RUN yum -y module enable nodejs:$NODEJS_VER && \
   libxslt-devel \
   lsof \
   make \
-  mariadb-connector-c-devel \
   openssl-devel \
   patch \
   procps-ng \
   npm \
   yarn \
   redhat-rpm-config \
-  sqlite-devel \
-  unzip \
   wget \
   which \
   zlib-devel" && \
@@ -50,6 +47,7 @@ RUN yum -y module enable ruby:$RUBY_VERSION && \
     yum -y clean all --enablerepo='*' && \
     rpm -V ${INSTALL_PKGS}
 
+FROM base as dependencies
 WORKDIR /app
 
 ENV BUNDLE_PATH /gems
@@ -61,10 +59,29 @@ COPY package.json .
 COPY yarn.lock .
 
 RUN yarn install
-RUN bundle install
+RUN bundle config --global frozen 1 \
+ && bundle install --path vendor/bundle --without development test \
+ # Remove unneeded files (cached *.gem, *.o, *.c)
+ && rm -rf /vendor/bundle/cache/*.gem
+
+RUN rm -rf /vendor/bundle/ruby/2.7.0/cache/*.gem
 
 COPY . /app/
+# Precompile assets
+RUN RAILS_ENV=production SECRET_KEY_BASE=foo bin/rails assets:precompile
+
+# Remove folders not needed in resulting image
+RUN rm -rf node_modules tmp/cache vendor/assets lib/assets spec
+
+
+FROM base
+
+COPY --from=dependencies --chown=app:app /app /app
+
+WORKDIR /app
+ENV RAILS_ENV=production
 EXPOSE 8080
+
 RUN chown -R 1001:0 /app && chmod -R ug+rwx /app && \
     rpm-file-permissions
 
@@ -72,9 +89,3 @@ ADD entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
 USER 1001
 ENTRYPOINT ["entrypoint.sh"]
-
-
-#ENTRYPOINT ["bin/rails"]
-#CMD ["s", "-b", "0.0.0.0"]
-
-
