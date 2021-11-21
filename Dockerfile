@@ -76,7 +76,7 @@ RUN rm -rf node_modules tmp/cache vendor/assets lib/assets spec
 
 FROM base
 
-COPY --from=dependencies --chown=app:app /app /app
+COPY --from=dependencies /app /app
 
 WORKDIR /app
 ENV RAILS_ENV=production
