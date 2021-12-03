@@ -67,8 +67,6 @@ RUN bundle config --global frozen 1 \
 RUN rm -rf /vendor/bundle/ruby/2.7.0/cache/*.gem
 
 COPY . /app/
-# Precompile assets
-RUN RAILS_ENV=production SECRET_KEY_BASE=foo bin/rails assets:precompile
 
 # Remove folders not needed in resulting image
 RUN rm -rf node_modules tmp/cache vendor/assets lib/assets spec
@@ -80,12 +78,12 @@ COPY --from=dependencies /app /app
 
 WORKDIR /app
 ENV RAILS_ENV=production
-EXPOSE 8080
 
 RUN chown -R 1001:0 /app && chmod -R ug+rwx /app && \
     rpm-file-permissions
-
-ADD entrypoint.sh /usr/bin/
-RUN chmod +x /usr/bin/entrypoint.sh
+RUN RAILS_ENV=production SECRET_KEY_BASE=foo bin/rails assets:precompile
 USER 1001
-ENTRYPOINT ["entrypoint.sh"]
+ENTRYPOINT ["bin/rails"]
+CMD ["s", "-b", "0.0.0.0"]
+
+EXPOSE 3000

@@ -23,8 +23,8 @@ spec:
       app: rails-deployment
   strategy:
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
   minReadySeconds: 5
   template:
     metadata:
@@ -36,6 +36,9 @@ spec:
           image: LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG
           ports:
             - containerPort: 8080
+          env:
+            - name: SECRET_KEY_BASE
+              value: "SDFS#@$#@$@##@$"
           resources:
             requests:
               cpu: 100m
