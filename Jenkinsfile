@@ -11,10 +11,10 @@
  * - milestone should be used to force all previous builds waiting to be promoted to abort once this one is clicked
  */
 
-oc = 'oc'
-jenkinsSlaveLabel = 'OCP-Slave1' // Not sure about this
-appName = 'aaqibzahoor-dev'
-appSpace = 'rails-app'
+oc = '/opt/homebrew/bin/oc'
+//jenkinsSlaveLabel = 'Built-In' // Not sure about this
+appName = 'rails-app'
+appSpace = 'aaqibzahoor-dev'
 repoVersionKey = 'bitbucket-ssh-key-read-write'
 
 // dynamic properties (NOT resolvable on pipeline start)
@@ -44,7 +44,7 @@ pipeline {
       yamlFile 'agent-pod.yml'
     }
   }*/
-  agent none
+  agent any
   options { timestamps() }
   environment {
     // dynamic properties (resolvable on pipeline start)
@@ -87,54 +87,13 @@ pipeline {
             sh "$oc cancel-build bc/${APP_NAME}"   // cancel first build, triggered below
           }
 
-          sh "$oc start-build ${APP_NAME} --env BUILD_ARTIFACT_URL=${BUILD_ARTIFACT_URL} --follow"
+          sh "$oc start-build ${APP_NAME} --follow --wait"
           sh "$oc tag ${APP_NAME}:latest ${APP_NAME}:${BUILD_LABEL}"
         }
       }
     }
-    stage('DeployDev') {
-      environment {
-        APP_REGION = 'dev'
-      }
-      steps {
-        script {
-          confirmationStep("$jenkinsSlaveLabel", 'Deploy to DEV?', 'DeployDev', {
-            deploySteps(openshiftDevUrl)
-          })
-        }
-      }
-    }
-    stage('PromoteNonProd') {
-      agent { label jenkinsSlaveLabel }
-      when {
-        expression {
-          skipAbortedOrCondition { !(env.BRANCH_NAME ==~ env.SIMPLE_FLOW_FILTER) }
-        }
-      }
-      steps {
-        confirmationStep("$jenkinsSlaveLabel", 'Promote Image to NonProd?', 'PromoteNonProd', {
-          authenticate openshiftDevUrl
-          sh "$oc annotate istag/${APP_NAME}:${BUILD_LABEL} platform.os.suncorp.com.au/promote-image=true"
-        })
-      }
-    }
-    stage('DeployNonProd') {
-      when {
-        expression {
-          skipAbortedOrCondition { !(env.BRANCH_NAME ==~ env.SIMPLE_FLOW_FILTER) }
-        }
-      }
-      environment {
-        APP_REGION = 'nonprod'
-      }
-      steps {
-        script {
-          confirmationStep("$jenkinsSlaveLabel", 'Deploy to NONPROD?', 'DeployNonProd', {
-            deploySteps(openshiftNonProdUrl, ['int'])
-          })
-        }
-      }
-    }
+
+
     stage('CleanUp') {
       when {
         expression {
@@ -142,14 +101,7 @@ pipeline {
         }
       }
       steps {
-        script {
-          def promptMsg = 'Are you finished your feature? Click proceed to be a good citizen and clean-up ALL resources.'
-          confirmationStep("$jenkinsSlaveLabel", "$promptMsg", 'CleanUp', {
-            authenticate openshiftDevUrl
-            sh "$oc delete all -l app=${appDeployName()}"
-            sh "$oc delete all -l app=${APP_NAME}"
-          })
-        }
+        echo "clean"
       }
     }
   }
@@ -233,7 +185,7 @@ def skipAbortedOrCondition(Closure closure) {
 }
 
 def authenticate(cluster) {
-  sh "$oc login --token=${TOKEN} --server=${cluster}"
+  sh "$oc login --token=${OPENSHIFT_CREDS} --server=${cluster}"
   sh "$oc project ${APP_SPACE}"
 }
 
@@ -247,22 +199,8 @@ def generateAppName(appName) {
 
 def generateBuildTag() {
   String buildLabel = null
-  node(jenkinsSlaveLabel) {
-    if (env.BRANCH_NAME == env.GIT_SEMVER_BRANCH) {
-      // FIXME: when you tag a greyed out hash in bitbucket the helper does not work :S
-      def currentVersion = publishVersion.getLatestTag('HEAD')
-      buildLabel = publishVersion.findNextVersion(currentVersion)
-    } else if (env.BRANCH_NAME ==~ env.GIT_HASHED_BRANCH_FILTER) {
-      def commit = checkout scm
-      def gitCommitShort = commit.GIT_COMMIT[0..6]
-      def prefix = env.BRANCH_NAME.split('/')[0]
-      buildLabel = "${prefix}-${gitCommitShort}"
-    } else {
-      // branches that you only want to generate one artifact should drop here (eg. feature)
-      buildLabel = env.BRANCH_NAME?.replace('/', '-')?.toLowerCase()
-    }
-  }
-  buildLabel
+  
+  buildLabel="rails-app"
 }
 
 //
