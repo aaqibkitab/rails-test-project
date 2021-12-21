@@ -59,10 +59,7 @@ COPY package.json .
 COPY yarn.lock .
 
 RUN yarn install
-RUN bundle config --global frozen 1 \
- && bundle install --path vendor/bundle --without development test \
- # Remove unneeded files (cached *.gem, *.o, *.c)
- && rm -rf /vendor/bundle/cache/*.gem
+RUN bundle install --path vendor/bundle
 
 RUN rm -rf /vendor/bundle/ruby/2.7.0/cache/*.gem
 
