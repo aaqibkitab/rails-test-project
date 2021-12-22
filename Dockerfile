@@ -59,14 +59,14 @@ COPY package.json .
 COPY yarn.lock .
 
 RUN yarn install
-RUN bundle install --without development test --path vendor/bundle
+#RUN bundle install --without development test --path vendor/bundle
 
-RUN rm -rf /vendor/bundle/ruby/2.7.0/cache/*.gem
+#RUN rm -rf /vendor/bundle/ruby/2.7.0/cache/*.gem
 
 COPY . /app/
 
 # Remove folders not needed in resulting image
-RUN rm -rf node_modules tmp/cache vendor/assets lib/assets spec
+#RUN rm -rf node_modules tmp/cache vendor/assets lib/assets spec
 
 
 FROM base
@@ -78,9 +78,8 @@ ENV RAILS_ENV=production
 
 RUN chown -R 1001:0 /app && chmod -R ug+rwx /app && \
     rpm-file-permissions
-RUN RAILS_ENV=production SECRET_KEY_BASE=foo bin/rails assets:precompile
+#RUN RAILS_ENV=production SECRET_KEY_BASE=foo bin/rails assets:precompile
 USER 1001
-ENTRYPOINT ["bin/rails"]
-CMD ["s", "-b", "0.0.0.0"]
+ENTRYPOINT ["tail", "-f", "/dev/null"]
 
 EXPOSE 3000
