@@ -59,7 +59,7 @@ pipeline {
     APP_SPACE = "${appSpace}"
     CONFIG_BRANCH = 'master'
     CONFIG_FILE = 'application.yml' // Not sure about it
-    CONFIG_REPO = 'ssh://git@github.com:aaqibkitab/rails-test-project.git'
+    CONFIG_REPO = 'https://github.com/aaqibkitab/rails-test-project.git'
     CONFIG_CRED_ID = 'config-ssh-key'
     GIT_HASHED_BRANCH_FILTER = '.*(develop|release|hotfix|bugfix).*'
     GIT_SEMVER_BRANCH = 'master'
@@ -89,6 +89,17 @@ pipeline {
 
           sh "$oc start-build ${APP_NAME} --follow --wait"
           sh "$oc tag ${APP_NAME}:latest ${APP_NAME}:${BUILD_LABEL}"
+        }
+      }
+    }
+
+    stage('DeployDev') {
+      environment {
+        APP_REGION = 'dev'
+      }
+      steps {
+        script {
+            deploySteps(openshiftDevUrl)
         }
       }
     }
