@@ -53,6 +53,7 @@ pipeline {
     BUILD_ARTIFACT_URL = "${NEXUS_URL}/service/local/repositories/inhouse/content/openshift-platform/${appName}/${BUILD_LABEL}/${appName}-${BUILD_LABEL}.jar"
     // static properties
     APP_REGION = 'dev'
+    BRANCH_NAME = 'master'
     APP_HEALTH_DELAY = 45
     APP_HEALTH_PATH = '/health'
     APP_SECRET = 'bitbucket-ssh-key'
@@ -211,7 +212,7 @@ def generateAppName(appName) {
 def generateBuildTag() {
   String buildLabel = null
   
-  buildLabel="rails-app"
+  buildLabel = sh(script: "echo `date +%s`", returnStdout: true).trim()
 }
 
 //
