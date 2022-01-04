@@ -59,7 +59,7 @@ COPY package.json .
 COPY yarn.lock .
 
 RUN yarn install
-#RUN bundle install --without development test --path vendor/bundle
+RUN bundle install --without development test --path vendor/bundle
 
 #RUN rm -rf /vendor/bundle/ruby/2.7.0/cache/*.gem
 

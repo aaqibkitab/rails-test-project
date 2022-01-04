@@ -170,7 +170,7 @@ def configureDeployment(def domains = []) {
   }
   finally {
     // prevent dc from being stuck in a paused state on error
-    //sh "$oc rollout resume dc/${appDeployName()}"
+       sh "$oc rollout resume dc/${appDeployName()}"
   }
 }
 
