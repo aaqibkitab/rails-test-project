@@ -89,7 +89,7 @@ pipeline {
           }
 
           sh "$oc start-build ${APP_NAME} --follow --wait"
-          sh "$oc tag ${APP_NAME}:latest ${APP_NAME}:${BUILD_LABEL}"
+          sh "$oc tag ${APP_NAME}:latest ${APP_NAME}:latest"
         }
       }
     }
@@ -170,7 +170,7 @@ def configureDeployment(def domains = []) {
   }
   finally {
     // prevent dc from being stuck in a paused state on error
-    sh "$oc rollout resume dc/${appDeployName()}"
+    //sh "$oc rollout resume dc/${appDeployName()}"
   }
 }
 
@@ -184,11 +184,11 @@ def refreshConfig() {
   sh "$oc create configmap ${APP_NAME}-config-${APP_REGION} --from-file application.yml=${configDir()}/${CONFIG_FILE}"
   sh "$oc create secret generic ${APP_NAME}-secret-${APP_REGION} --from-file application.yml=${configDir()}/${SECRET_FILE}"
 }
-
 def createDeployment() {
-  sh "$oc run ${appDeployName()} --image=docker-registry.default.svc:5000/${APP_SPACE}/${APP_NAME}:${BUILD_LABEL} " +
+  sh "$oc run ${appDeployName()} --image=image-registry.openshift-image-registry.svc:5000/${APP_SPACE}/${APP_NAME}:latest " +
           "--image-pull-policy=IfNotPresent " +
           "--labels app=${appDeployName()} "
+  sh "$oc create deploymentconfig ${appDeployName()} --image=image-registry.openshift-image-registry.svc:5000/${APP_SPACE}/${APP_NAME}:latest"
   sh "$oc create service clusterip ${appDeployName()} --tcp 3000:80"
 }
 
@@ -213,7 +213,7 @@ def generateAppName(appName) {
 def generateBuildTag() {
   String buildLabel = null
   
-  buildLabel = sh(script: "echo `date +%s`", returnStdout: true).trim()
+  buildLabel = "1"
 }
 
 //
