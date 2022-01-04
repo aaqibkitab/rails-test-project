@@ -152,8 +152,8 @@ def configureDeployment(def domains = []) {
     shMask "$oc set volume dc/${appDeployName()} --add --secret-name=${APP_NAME}-secret-${APP_REGION} --mount-path=/opt/app-root/secrets", "${volumeMaskRegex}"
 
     // add a health check to the deployment configuration
-    sh "$oc set probe dc/${appDeployName()} --readiness --get-url=http://:8080${APP_HEALTH_PATH} --initial-delay-seconds=${APP_HEALTH_DELAY}"
-    sh "$oc set probe dc/${appDeployName()} --liveness --get-url=http://:8080${APP_HEALTH_PATH} --initial-delay-seconds=${APP_HEALTH_DELAY}"
+   // sh "$oc set probe dc/${appDeployName()} --readiness --get-url=http://:8080${APP_HEALTH_PATH} --initial-delay-seconds=${APP_HEALTH_DELAY}"
+   // sh "$oc set probe dc/${appDeployName()} --liveness --get-url=http://:8080${APP_HEALTH_PATH} --initial-delay-seconds=${APP_HEALTH_DELAY}"
 
     // set any runtime environment variables
     sh "$oc set env dc/${appDeployName()} SPRING_CONFIG_LOCATION=/opt/app-root/secrets/"
@@ -206,7 +206,8 @@ def generateAppName(appName) {
   if (env.BRANCH_NAME == 'master') {
     return appName
   }
-  "${appName}-${env.BRANCH_NAME?.replace('/', '-')?.toLowerCase()}"
+  //"${appName}-${env.BRANCH_NAME?.replace('/', '-')?.toLowerCase()}"
+  "rails-app-master"
 }
 
 def generateBuildTag() {
