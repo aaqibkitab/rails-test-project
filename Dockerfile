@@ -73,7 +73,7 @@ ENV BUNDLE_PATH /gems
 ENV RAILS_ENV=production
 
 #RUN chown -R 1001:0 /app && chmod -R ug+rwx /app && \
-    rpm-file-permissions
+#    rpm-file-permissions
 #RUN RAILS_ENV=production SECRET_KEY_BASE=foo bin/rails assets:precompile
 USER 1001
 ENTRYPOINT ["tail", "-f", "/dev/null"]
