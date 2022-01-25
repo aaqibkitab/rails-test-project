@@ -10,6 +10,8 @@ ENV RUBY_VERSION="${RUBY_MAJOR_VERSION}.${RUBY_MINOR_VERSION}" \
 
 #FROM base as dependencies
 WORKDIR /app
+USER root
+RUN yum module list
 
 ENV BUNDLE_PATH /gems
 # install gems
