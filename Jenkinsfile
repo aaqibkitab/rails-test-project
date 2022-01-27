@@ -40,7 +40,7 @@ pipeline {
       cloud 'kubernetes'
       namespace appSpace
       //credentialsId 'openshift-oc-credentials'
-      label 'cicd-pod'
+      label 'cicd-pod1'
       yamlFile 'agent-pod.yml'
     }
   }

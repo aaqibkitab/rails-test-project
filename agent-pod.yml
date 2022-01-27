@@ -3,11 +3,11 @@ kind: Pod
 spec:
   containers:
     - name: jnlp
-      image: docker-registry.default.svc:5000/openshift/suncorp-jenkins-agent-base-rhel7
+      image: image-registry.openshift-image-registry.svc:5000/openshift/jenkins-agent-base@sha256:00c3c8666cc7044a10839cefed0b3f0d58d45f9f314115a51385f8c8458624e1
       args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
       tty: true
     - name: python
-      image: docker-registry.default.svc:5000/openshift/python
+      image: image-registry.openshift-image-registry.svc:5000/openshift/python
       command:
         - cat # must run cat with no file, etc., so that it is a 'long-running' task
       tty: true
