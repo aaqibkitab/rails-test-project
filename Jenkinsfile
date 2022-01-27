@@ -35,16 +35,16 @@ aborted = false
 // TODO: issue with bitbucket and forking into your user account it hashes the URL 'ssh://git@bitbucket.int.corp.sun:2222/~****/domestic-canary-cicd.git'
 
 pipeline {
-  /*agent {
+  agent {
    kubernetes {
-      cloud 'openshift-aws-dev.int.corp.sun'
+      cloud 'https://api.sandbox.x8i5.p1.openshiftapps.com:6443'
       namespace appSpace
-      credentialsId 'openshift-playground-a336546'
+      credentialsId 'openshift-oc-credentials'
       label 'cicd-pod'
       yamlFile 'agent-pod.yml'
     }
-  }*/
-  agent any
+  }
+  //agent any
   options { timestamps() }
   environment {
     // dynamic properties (resolvable on pipeline start)

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: jnlp
+      image: docker-registry.default.svc:5000/openshift/suncorp-jenkins-agent-base-rhel7
+      args: ['$(JENKINS_SECRET)', '$(JENKINS_NAME)']
+      tty: true
+    - name: python
+      image: docker-registry.default.svc:5000/openshift/python
+      command:
+        - cat # must run cat with no file, etc., so that it is a 'long-running' task
+      tty: true
