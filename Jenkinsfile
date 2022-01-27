@@ -37,9 +37,9 @@ aborted = false
 pipeline {
   agent {
    kubernetes {
-      cloud 'https://api.sandbox.x8i5.p1.openshiftapps.com:6443'
+      cloud 'kubernetes'
       namespace appSpace
-      credentialsId 'openshift-oc-credentials'
+      //credentialsId 'openshift-oc-credentials'
       label 'cicd-pod'
       yamlFile 'agent-pod.yml'
     }
