@@ -12,7 +12,7 @@
  */
 
 oc = '/opt/homebrew/bin/oc'
-//jenkinsSlaveLabel = 'Built-In' // Not sure about this
+jenkinsSlaveLabel = '' // Not sure about this
 appName = 'rails-app'
 appSpace = 'aaqibzahoor-dev'
 repoVersionKey = 'bitbucket-ssh-key-read-write'
@@ -29,22 +29,13 @@ openshiftNonProdUrl = '#'
 aborted = false
 
 // helpers
-//publishVersion = fileLoader.fromGit('repoVersioner.groovy', 'ssh://git@bitbucket.int.corp.sun:2222/jh/repo-versioner.git', 'v1.0.3', repoVersionKey, jenkinsSlaveLabel)
+publishVersion = fileLoader.fromGit('repoVersioner.groovy', 'https://github.com/aaqibkitab/rails-test-project.git', 'master', repoVersionKey, '')
 
 // TODO: test using dynamic slaves, ensure we do not hang onto pods while waiting for manual steps
 // TODO: issue with bitbucket and forking into your user account it hashes the URL 'ssh://git@bitbucket.int.corp.sun:2222/~****/domestic-canary-cicd.git'
 
 pipeline {
-  agent {
-   kubernetes {
-      cloud 'kubernetes'
-      namespace appSpace
-      //credentialsId 'openshift-oc-credentials'
-      label 'cicd-pod1'
-      yamlFile 'agent-pod.yml'
-    }
-  }
-  //agent any
+  agent any
   options { timestamps() }
   environment {
     // dynamic properties (resolvable on pipeline start)
@@ -207,13 +198,27 @@ def generateAppName(appName) {
     return appName
   }
   //"${appName}-${env.BRANCH_NAME?.replace('/', '-')?.toLowerCase()}"
-  "rails-app-master"
+  return "rails-app-master"
 }
 
 def generateBuildTag() {
-  String buildLabel = null
-  
-  buildLabel = "1"
+ String buildLabel = null
+  node(jenkinsSlaveLabel) {
+    if (env.BRANCH_NAME == env.GIT_SEMVER_BRANCH) {
+      // FIXME: when you tag a greyed out hash in bitbucket the helper does not work :S
+      def currentVersion = publishVersion.getLatestTag('HEAD')
+      buildLabel = publishVersion.findNextVersion(currentVersion)
+    } else if (env.BRANCH_NAME ==~ env.GIT_HASHED_BRANCH_FILTER) {
+      def commit = checkout scm
+      def gitCommitShort = commit.GIT_COMMIT[0..6]
+      def prefix = env.BRANCH_NAME.split('/')[0]
+      buildLabel = "${prefix}-${gitCommitShort}"
+    } else {
+      // branches that you only want to generate one artifact should drop here (eg. feature)
+      buildLabel = env.BRANCH_NAME?.replace('/', '-')?.toLowerCase()
+    }
+  }
+  buildLabel
 }
 
 //
