@@ -65,6 +65,7 @@ pipeline {
     stage('BuildImage') {
       steps {
         script {
+          echo "${BUILD_LABEL}"
           echo "${OPENSHIFT_CREDS}"
           authenticate openshiftDevUrl
 
