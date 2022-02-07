@@ -43,8 +43,8 @@ def call(Map args) {
  */
 
 def getLatestTag(branchName) {
-    sh "git fetch --tags"
-    latestTag = sh(script: "git describe ${branchName} --abbrev=0 --tags", returnStdout: true).trim()
+    sh "git fetch --tags && git fetch"
+    latestTag = sh(script: "git describe ${branchName} --abbrev=0 --tags --always", returnStdout: true).trim()
     return latestTag
 }
 
